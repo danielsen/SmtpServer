@@ -230,6 +230,8 @@ namespace SmtpServer.Tests
             Assert.Equal(host, ((RcptCommand)command).Address.Host);
         }
 
+<<<<<<< HEAD
+=======
         [Fact]
         public void CanMakeProxyIpV4()
         {
@@ -297,6 +299,7 @@ namespace SmtpServer.Tests
             Assert.Equal(ipAddr.ToString(), checkAddress.ToString());
         }
 
+>>>>>>> Added support for proxy protocol
         [Fact]
         public void CanMakeAtom()
         {

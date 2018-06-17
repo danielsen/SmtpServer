@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using SmtpServer.Mail;
 using SmtpServer.Protocol;
@@ -13,7 +12,7 @@ namespace SmtpServer.Tests
     {
         static SmtpParser CreateParser(string text)
         {
-            var segment = new ArraySegment<byte>(Encoding.UTF8.GetBytes(text));
+            var segment = new ArraySegment<byte>(Encoding.ASCII.GetBytes(text));
 
             var options = new SmtpServerOptionsBuilder().Logger(new NullLogger()).Build();
 
@@ -60,7 +59,7 @@ namespace SmtpServer.Tests
             // assert
             Assert.True(result);
             Assert.True(command is HeloCommand);
-            Assert.Equal("abc-1-def.mail.com", ((HeloCommand)command).DomainOrAddress);
+            Assert.Equal("abc-1-def.mail.com", ((HeloCommand)command).Domain);
         }
 
         [Theory]
@@ -130,21 +129,11 @@ namespace SmtpServer.Tests
             Assert.Equal("Y2Fpbi5vc3VsbGl2YW5AZ21haWwuY29t", ((AuthCommand)command).Parameter);
         }
 
-        [Theory]
-        [InlineData("cain.osullivan@gmail.com", "cain.osullivan", "gmail.com")]
-        [InlineData(@"""Abc@def""@example.com", "Abc@def", "example.com")]
-        [InlineData("pelé@example.com", "pelé", "example.com", "SMTPUTF8")]
-        public void CanMakeMail(string email, string user, string host, string extension = null)
+        [Fact]
+        public void CanMakeMail()
         {
             // arrange
-            var mailTo = $"MAIL FROM:<{email}>";
-
-            if (!string.IsNullOrWhiteSpace(extension))
-            {
-                mailTo += $" {extension}";
-            }
-
-            var parser = CreateParser(mailTo);
+            var parser = CreateParser("MAIL FROM:<cain.osullivan@gmail.com>");
 
             // act
             var result = parser.TryMakeMail(out SmtpCommand command, out SmtpResponse errorResponse);
@@ -152,15 +141,25 @@ namespace SmtpServer.Tests
             // assert
             Assert.True(result);
             Assert.True(command is MailCommand);
-            Assert.Equal(user, ((MailCommand)command).Address.User);
-            Assert.Equal(host, ((MailCommand)command).Address.Host);
-
-            if (!string.IsNullOrWhiteSpace(extension))
-            {
-                // verify the extension was put in the parameters
-                Assert.True(((MailCommand)command).Parameters.ContainsKey(extension));
-            }
+            Assert.Equal("cain.osullivan", ((MailCommand)command).Address.User);
+            Assert.Equal("gmail.com", ((MailCommand)command).Address.Host);
         }
+
+        //[Fact]
+        //public void CanMakeUtf8Mail()
+        //{
+        //    // arrange
+        //    var parser = CreateParser("MAIL FROM:<pelé@example.com> SMTPUTF8");
+
+        //    // act
+        //    var result = parser.TryMakeMail(out SmtpCommand command, out SmtpResponse errorResponse);
+
+        //    // assert
+        //    Assert.True(result);
+        //    Assert.True(command is MailCommand);
+        //    Assert.Equal("pelé", ((MailCommand)command).Address.User);
+        //    Assert.Equal("example.com", ((MailCommand)command).Address.Host);
+        //}
 
         [Fact]
         public void CanMakeMailWithNoAddress()
@@ -211,14 +210,11 @@ namespace SmtpServer.Tests
             Assert.NotNull(errorResponse);
         }
 
-        [Theory]
-        [InlineData("cain.osullivan@gmail.com", "cain.osullivan", "gmail.com")]
-        [InlineData(@"""Abc@def""@example.com", "Abc@def", "example.com")]
-        [InlineData("pelé@example.com", "pelé", "example.com")]
-        public void CanMakeRcpt(string email, string user, string host)
+        [Fact]
+        public void CanMakeRcpt()
         {
             // arrange
-            var parser = CreateParser($"RCPT TO:<{email}>");
+            var parser = CreateParser("RCPT TO:<cain.osullivan@gmail.com>");
 
             // act
             var result = parser.TryMakeRcpt(out SmtpCommand command, out SmtpResponse errorResponse);
@@ -226,77 +222,10 @@ namespace SmtpServer.Tests
             // assert
             Assert.True(result);
             Assert.True(command is RcptCommand);
-            Assert.Equal(user, ((RcptCommand)command).Address.User);
-            Assert.Equal(host, ((RcptCommand)command).Address.Host);
+            Assert.Equal("cain.osullivan", ((RcptCommand)command).Address.User);
+            Assert.Equal("gmail.com", ((RcptCommand)command).Address.Host);
         }
-
-        [Fact]
-        public void CanMakeProxyIpV4()
-        {
-            // arrange
-            var parser = CreateParser("PROXY TCP4 192.168.1.1 192.168.1.2 1234 16789");
-
-            // act
-            var result = parser.TryMakeProxy(out SmtpCommand command, out SmtpResponse errorResponse);
-
-            // assert
-            Assert.True(result);
-            Assert.True(command is ProxyProtocolCommand);
-            Assert.Equal("192.168.1.1", ((ProxyProtocolCommand)command).SourceEndpoint.Address.ToString());
-            Assert.Equal("192.168.1.2", ((ProxyProtocolCommand)command).DestinationEndpoint.Address.ToString());
-            Assert.Equal(1234, ((ProxyProtocolCommand)command).SourceEndpoint.Port);
-            Assert.Equal(16789, ((ProxyProtocolCommand)command).DestinationEndpoint.Port);
-        }
-
-        [Fact]
-        public void CanMakeProxyIpV6()
-        {
-            // arrange
-            var parser = CreateParser("PROXY TCP6 2001:1234:abcd::0001 3456:2e76:66d8:f84:abcd:abef:ffff:1234 1234 16789");
-
-            // act
-            var result = parser.TryMakeProxy(out SmtpCommand command, out SmtpResponse errorResponse);
-
-            // assert
-            Assert.True(result);
-            Assert.True(command is ProxyProtocolCommand);
-            Assert.Equal(IPAddress.Parse("2001:1234:abcd::0001").ToString(), ((ProxyProtocolCommand)command).SourceEndpoint.Address.ToString());
-            Assert.Equal(IPAddress.Parse("3456:2e76:66d8:f84:abcd:abef:ffff:1234").ToString(), ((ProxyProtocolCommand)command).DestinationEndpoint.Address.ToString());
-            Assert.Equal(1234, ((ProxyProtocolCommand)command).SourceEndpoint.Port);
-            Assert.Equal(16789, ((ProxyProtocolCommand)command).DestinationEndpoint.Port);
-        }
-
-        [Theory]
-        [InlineData("2001:1234:abcd::0001")]
-        [InlineData("2001:1234:abcd::0001 ")]
-        [InlineData("2001::0001")]
-        [InlineData("2001::0001 ")]
-        [InlineData("2001:1234:abcd::0001 ")]
-        [InlineData("2001:1:ab::0001")]
-        [InlineData("2001:1:ab::001 ")]
-        [InlineData("2001:1:ab::001")]
-        [InlineData("2001:db8:0:0:1:0:0:1")]
-        [InlineData("::1")]
-        [InlineData("::1110")]
-        [InlineData("::1110:1")] 
-        public void CanMakeIpv6(string data)
-        {
-            // arrange
-            var parser = CreateParser(data);
-
-            string address;
-            // act
-            var result = parser.TryMakeIpv6AddressLiteral(out address);
-
-            IPAddress ipAddr;
-            // assert
-            Assert.True(result);
-            Assert.True(IPAddress.TryParse(address, out ipAddr));
-
-            IPAddress checkAddress = IPAddress.Parse(data.Trim());
-            Assert.Equal(ipAddr.ToString(), checkAddress.ToString());
-        }
-
+        
         [Fact]
         public void CanMakeAtom()
         {
