@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SmtpServer.IO;
+using System.Net;
 using SmtpServer.Protocol;
 
 namespace SmtpServer
