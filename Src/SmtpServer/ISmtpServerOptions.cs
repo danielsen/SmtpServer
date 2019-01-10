@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using SmtpServer.Authentication;
@@ -56,6 +57,11 @@ namespace SmtpServer
         IUserAuthenticatorFactory UserAuthenticatorFactory { get; }
 
         /// <summary>
+        /// Gets the endpoint authenticator factory to use.
+        /// </summary>
+        IEndpointAuthenticatorFactory EndpointAuthenticatorFactory { get; }
+
+        /// <summary>
         /// The supported SSL protocols.
         /// </summary>
         SslProtocols SupportedSslProtocols { get; }
@@ -79,5 +85,15 @@ namespace SmtpServer
         /// The logger instance to use.
         /// </summary>
         ILogger Logger { get; }
+
+        /// <summary>
+        /// PROXY protocol is / is not supported on this session.
+        /// </summary>
+        bool Proxy { get; }
+
+        /// <summary>
+        /// Collection of hosts which are allowed to submit the PROXY protocol.
+        /// </summary>
+        IReadOnlyCollection<IPAddress> ProxyAddresses { get; }
     }
 }

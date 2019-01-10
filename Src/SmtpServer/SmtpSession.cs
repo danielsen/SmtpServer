@@ -60,8 +60,6 @@ namespace SmtpServer
                 return;
             }
 
-            await OutputGreetingAsync(cancellationToken).ReturnOnAnyThread();
-
             await ExecuteAsync(_context, cancellationToken).ReturnOnAnyThread();
         }
 
@@ -73,6 +71,22 @@ namespace SmtpServer
         /// <returns>A task which asynchronously performs the execution.</returns>
         async Task ExecuteAsync(SmtpSessionContext context, CancellationToken cancellationToken)
         {
+            // The PROXY protocol requires that the receiver must wait for the 
+            // proxy command to be fully received before it starts processing the
+            // session. Since the receiver is expected to speak first in SMTP,
+            // i.e. sending the greeting on connect, we wait for the proxy
+            // command to be consumed and processed before speaking to the 
+            // remote client.
+            if (!_context.ServerOptions.Proxy)
+            {
+                await OutputGreetingAsync(cancellationToken).ReturnOnAnyThread();
+            }
+
+            if (_context.ServerOptions.Proxy)
+            {
+                await IngestProxyAsync(context, cancellationToken).ReturnOnAnyThread();
+            }
+
             var retries = _context.ServerOptions.MaxRetryCount;
 
             while (retries-- > 0 && context.IsQuitRequested == false && cancellationToken.IsCancellationRequested == false)
@@ -199,6 +213,24 @@ namespace SmtpServer
 
             await _context.NetworkClient.WriteLineAsync($"220 {_context.ServerOptions.ServerName} v{version} ESMTP ready", cancellationToken).ReturnOnAnyThread();
             await _context.NetworkClient.FlushAsync(cancellationToken).ReturnOnAnyThread();
+        }
+
+        async Task IngestProxyAsync(SmtpSessionContext context, CancellationToken cancellationToken)
+        {
+            var text = await ReadCommandInputAsync(context, cancellationToken);
+
+            if (TryMake(context, text, out SmtpCommand command, out SmtpResponse response))
+            {
+                if (await ExecuteAsync(command, context, cancellationToken).ReturnOnAnyThread())
+                {
+                    await OutputGreetingAsync(cancellationToken).ReturnOnAnyThread();
+                    await _context.NetworkClient.FlushAsync(cancellationToken).ReturnOnAnyThread();
+                }
+                else
+                {
+                    await _context.NetworkClient.FlushAsync(cancellationToken).ReturnOnAnyThread();
+                }
+            }   
         }
         
         /// <summary>

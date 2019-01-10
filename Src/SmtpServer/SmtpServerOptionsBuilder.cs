@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using SmtpServer.Authentication;
@@ -164,6 +165,18 @@ namespace SmtpServer
         }
 
         /// <summary>
+        /// Sets the endpoint authenticator factory.
+        /// </summary>
+        /// <param name="value">The endpoint authenticator factory.</param>
+        /// <returns>A OptionsBuilder to continue building on.</returns>
+        public SmtpServerOptionsBuilder EndpointAuthenticator(IEndpointAuthenticatorFactory value)
+        {
+            _setters.Add(options =>
+                options.EndpointAuthenticatorFactory = value ?? DoNothingEndpointAuthenticator.Instance);
+            return this;
+        }
+
+        /// <summary>
         /// Sets the maximum message size.
         /// </summary>
         /// <param name="value">The maximum message size to allow.</param>
@@ -247,6 +260,24 @@ namespace SmtpServer
             return this;
         }
 
+        public SmtpServerOptionsBuilder ProxyAddresses(List<string> proxyAddresses)
+        {
+            _setters.Add(options => options.Proxy = true);
+
+            var proxyIpv4Addresses = new List<IPAddress>();
+
+            foreach (var address in proxyAddresses)
+            {
+                var result = IPAddress.TryParse(address, out IPAddress ipAddress);
+                if (result)
+                    proxyIpv4Addresses.Add(ipAddress);
+            }
+
+            _setters.Add(options => options.ProxyAddresses = proxyIpv4Addresses);
+
+            return this;
+        }
+
         #region SmtpServerOptions
 
         class SmtpServerOptions : ISmtpServerOptions
@@ -302,6 +333,11 @@ namespace SmtpServer
             public IUserAuthenticatorFactory UserAuthenticatorFactory { get; set; }
 
             /// <summary>
+            /// Gets the endpoint authenticator factory to use.
+            /// </summary>
+            public IEndpointAuthenticatorFactory EndpointAuthenticatorFactory { get; set; }
+
+            /// <summary>
             /// The supported SSL protocols.
             /// </summary>
             public SslProtocols SupportedSslProtocols { get; set; }
@@ -325,6 +361,16 @@ namespace SmtpServer
             /// The logger instance to use.
             /// </summary>
             public ILogger Logger { get; set; }
+
+            /// <summary>
+            /// PROXY protocol is / is not supported on this session.
+            /// </summary>
+            public bool Proxy { get; internal set; }
+
+            /// <summary>
+            /// Collection of hosts which are allowed to submit the PROXY protocol.
+            /// </summary>
+            public IReadOnlyCollection<IPAddress> ProxyAddresses { get; internal set; }
         }
 
         #endregion

@@ -27,7 +27,7 @@ namespace SmtpServer.Protocol
                     { NoopCommand.Command, TryMakeNoop },
                     { RsetCommand.Command, TryMakeRset },
                     { QuitCommand.Command, TryMakeQuit },
-                    { ProxyProtocolCommand.Command, TryMakeProxy },
+                    { ProxyCommand.Command, TryMakeProxy },
                     { HeloCommand.Command, TryMakeHelo, c => c.NetworkClient.IsSecure ? SmtpState.WaitingForMailSecure : SmtpState.WaitingForMail },
                     { EhloCommand.Command, TryMakeEhlo, c => c.NetworkClient.IsSecure ? SmtpState.WaitingForMailSecure : SmtpState.WaitingForMail },
                 },

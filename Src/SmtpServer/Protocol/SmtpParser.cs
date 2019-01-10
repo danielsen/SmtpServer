@@ -288,8 +288,7 @@ namespace SmtpServer.Protocol
             Enumerator.Take();
             Enumerator.Skip(TokenKind.Space);
 
-            string inetProto;
-            if (TryMake(TryMakeProxyProtoTypeString, out inetProto) == false)
+            if (TryMake(TryMakeProxyProtoTypeString, out string inetProto) == false)
             {
                 return false;
             }
@@ -297,7 +296,7 @@ namespace SmtpServer.Protocol
             if (inetProto == "UNKNOWN")
             {
                 // IF INET PROTO IS UNKNOWN REST OF THIS LINE SHOULD BE IGNORED.
-                command = new ProxyProtocolCommand(_options, null, null);
+                command = new ProxyCommand(_options, null, null);
                 return true;
             }
 
@@ -329,21 +328,19 @@ namespace SmtpServer.Protocol
             Enumerator.Skip(TokenKind.Space);
 
             // Read ports
-            int sourcePort;
-            int destinationPort;
-            if (TryMakeShortNum(out sourcePort) == false)
+            if (TryMakeShortNum(out var sourcePort) == false)
             {
                 return false;
             }
 
             Enumerator.Skip(TokenKind.Space);
 
-            if (TryMakeShortNum(out destinationPort) == false)
+            if (TryMakeShortNum(out var destinationPort) == false)
             {
                 return false;
             }
 
-            command = new ProxyProtocolCommand(_options, new IPEndPoint(sourceIp, sourcePort),
+            command = new ProxyCommand(_options, new IPEndPoint(sourceIp, sourcePort),
                 new IPEndPoint(destinationIp, destinationPort));
             return true;
         }
@@ -354,8 +351,7 @@ namespace SmtpServer.Protocol
             fromIp = null;
             toIp = null;
 
-            string fromAddress;
-            if (TryMake(@delegate, out fromAddress) == false)
+            if (TryMake(@delegate, out var fromAddress) == false)
             {
                 return false;
             }
@@ -367,8 +363,7 @@ namespace SmtpServer.Protocol
 
             Enumerator.Skip(TokenKind.Space);
 
-            string toAddress;
-            if (TryMake(@delegate, out toAddress) == false)
+            if (TryMake(@delegate, out var toAddress) == false)
             {
                 return false;
             }

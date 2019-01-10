@@ -241,11 +241,11 @@ namespace SmtpServer.Tests
 
             // assert
             Assert.True(result);
-            Assert.True(command is ProxyProtocolCommand);
-            Assert.Equal("192.168.1.1", ((ProxyProtocolCommand)command).SourceEndpoint.Address.ToString());
-            Assert.Equal("192.168.1.2", ((ProxyProtocolCommand)command).DestinationEndpoint.Address.ToString());
-            Assert.Equal(1234, ((ProxyProtocolCommand)command).SourceEndpoint.Port);
-            Assert.Equal(16789, ((ProxyProtocolCommand)command).DestinationEndpoint.Port);
+            Assert.True(command is ProxyCommand);
+            Assert.Equal("192.168.1.1", ((ProxyCommand)command).SourceEndpoint.Address.ToString());
+            Assert.Equal("192.168.1.2", ((ProxyCommand)command).DestinationEndpoint.Address.ToString());
+            Assert.Equal(1234, ((ProxyCommand)command).SourceEndpoint.Port);
+            Assert.Equal(16789, ((ProxyCommand)command).DestinationEndpoint.Port);
         }
 
         [Fact]
@@ -259,11 +259,11 @@ namespace SmtpServer.Tests
 
             // assert
             Assert.True(result);
-            Assert.True(command is ProxyProtocolCommand);
-            Assert.Equal(IPAddress.Parse("2001:1234:abcd::0001").ToString(), ((ProxyProtocolCommand)command).SourceEndpoint.Address.ToString());
-            Assert.Equal(IPAddress.Parse("3456:2e76:66d8:f84:abcd:abef:ffff:1234").ToString(), ((ProxyProtocolCommand)command).DestinationEndpoint.Address.ToString());
-            Assert.Equal(1234, ((ProxyProtocolCommand)command).SourceEndpoint.Port);
-            Assert.Equal(16789, ((ProxyProtocolCommand)command).DestinationEndpoint.Port);
+            Assert.True(command is ProxyCommand);
+            Assert.Equal(IPAddress.Parse("2001:1234:abcd::0001").ToString(), ((ProxyCommand)command).SourceEndpoint.Address.ToString());
+            Assert.Equal(IPAddress.Parse("3456:2e76:66d8:f84:abcd:abef:ffff:1234").ToString(), ((ProxyCommand)command).DestinationEndpoint.Address.ToString());
+            Assert.Equal(1234, ((ProxyCommand)command).SourceEndpoint.Port);
+            Assert.Equal(16789, ((ProxyCommand)command).DestinationEndpoint.Port);
         }
 
         [Theory]
