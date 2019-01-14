@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SmtpServer.Extensions;
 using SmtpServer.IO;
 using SmtpServer.Mail;
 using SmtpServer.Storage;

@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SmtpServer.Mail;
 
 namespace SmtpServer
 {
     public interface IMessageTransaction
     {
+        /// <summary>
+        /// Gets or sets the id for this transaction
+        /// </summary>
+        Guid Id { get; set; }
+
         /// <summary>
         /// Gets or sets the mailbox that is sending the message.
         /// </summary>

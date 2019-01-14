@@ -33,6 +33,16 @@
         StartMailInput = 354,
 
         /// <summary>
+        /// Temporary system error, usually recoverable but results in closing channel
+        /// </summary>
+        TemporarySystemError = 421,
+
+        /// <summary>
+        /// Temporary rejection, suitable for rate limiting, etc.
+        /// </summary>
+        TemporaryReject = 451,
+
+        /// <summary>
         /// There is insufficent stored to handle the mail.
         /// </summary>
         InsufficientStorage = 452,

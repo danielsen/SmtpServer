@@ -1,7 +1,7 @@
 ﻿using System;
-using SmtpServer.Protocol;
 using System.Threading;
 using System.Threading.Tasks;
+using SmtpServer.Protocol;
 
 namespace SmtpServer.Storage
 {

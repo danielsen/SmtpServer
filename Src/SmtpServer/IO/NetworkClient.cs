@@ -6,6 +6,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using SmtpServer.Extensions;
 
 namespace SmtpServer.IO
 {
@@ -16,6 +17,8 @@ namespace SmtpServer.IO
         byte[] _buffer;
         int _bytesRead = -1;
         int _index;
+        private int _totalBytesRead;
+        private int _totalBytesSent;
 
         /// <summary>
         /// Constructor.
@@ -26,6 +29,8 @@ namespace SmtpServer.IO
         {
             _stream = stream;
             _bufferLength = bufferLength;
+            _totalBytesRead = 0;
+            _totalBytesSent = 0;
         }
 
         /// <summary>
@@ -36,7 +41,8 @@ namespace SmtpServer.IO
         /// <param name="bufferReadTimeout">The timeout to apply to each buffer read.</param>
         internal NetworkClient(Stream stream, int bufferLength, TimeSpan bufferReadTimeout) : this(stream, bufferLength)
         {
-            _stream.ReadTimeout = (int)bufferReadTimeout.TotalMilliseconds;
+            if (_stream.CanTimeout)
+                _stream.ReadTimeout = (int)bufferReadTimeout.TotalMilliseconds;
         }
 
         /// <summary>
@@ -54,7 +60,7 @@ namespace SmtpServer.IO
         /// <param name="count">The number of bytes to consume.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The list of buffers that contain the bytes matching while the predicate was true.</returns>
-        public async Task<IReadOnlyList<ArraySegment<byte>>> ReadAsync(Func<byte, bool> @continue, long count, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ArraySegment<byte>>> ReadAsync(Func<byte, bool> @continue, long count, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (await ReadBufferAsync(cancellationToken) == false)
             {
@@ -95,11 +101,12 @@ namespace SmtpServer.IO
         /// <param name="buffers">The list of array segment buffers to write.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that asynchronously performs the operation.</returns>
-        public async Task WriteAsync(IReadOnlyList<ArraySegment<byte>> buffers, CancellationToken cancellationToken = default)
+        public async Task WriteAsync(IReadOnlyList<ArraySegment<byte>> buffers, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (var buffer in buffers)
             {
                 await _stream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
+                _totalBytesSent += buffer.Count;
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -110,7 +117,7 @@ namespace SmtpServer.IO
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous flush operation.</returns>
-        public Task FlushAsync(CancellationToken cancellationToken = default)
+        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             return _stream.FlushAsync(cancellationToken);
         }
@@ -122,7 +129,7 @@ namespace SmtpServer.IO
         /// <param name="protocols">The value that represents the protocol used for authentication.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that asynchronously performs the operation.</returns>
-        public async Task UpgradeAsync(X509Certificate certificate, SslProtocols protocols, CancellationToken cancellationToken = default)
+        public async Task UpgradeAsync(X509Certificate certificate, SslProtocols protocols, CancellationToken cancellationToken = default(CancellationToken))
         {
             var stream = new SslStream(_stream, true);
 
@@ -146,6 +153,7 @@ namespace SmtpServer.IO
                 _buffer = new byte[_bufferLength];
                 _bytesRead = await _stream.ReadAsync(_buffer, 0, _buffer.Length, cancellationToken).ReturnOnAnyThread();
             }
+            _totalBytesRead += _bytesRead;
 
             return _bytesRead > 0;
         }
@@ -181,5 +189,24 @@ namespace SmtpServer.IO
         /// Returns a value indicating whether or not the current client is secure.
         /// </summary>
         public bool IsSecure => _stream is SslStream;
+
+        /// <summary>
+        /// Returns the total count of bytes read on this network client.
+        /// </summary>
+        /// <returns>Total count of bytes read.</returns>
+        public int BytesRead()
+        {
+            return _totalBytesRead;
+        }
+
+        /// <summary>
+        /// Returns the total count of bytes sent on this network client.
+        /// </summary>
+        /// <returns>Total count of bytes sent.</returns>
+        public int BytesSent()
+        {
+            return _totalBytesSent;
+        }
+
     }
 }

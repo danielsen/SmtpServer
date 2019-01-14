@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SmtpServer
+namespace SmtpServer.Extensions
 {
     public static class StringExtensions
     {

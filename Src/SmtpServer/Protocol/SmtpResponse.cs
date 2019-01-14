@@ -14,7 +14,13 @@
         public static readonly SmtpResponse AuthenticationSuccessful = new SmtpResponse(SmtpReplyCode.AuthenticationSuccessful, "go ahead");
         public static readonly SmtpResponse TransactionFailed = new SmtpResponse(SmtpReplyCode.TransactionFailed);
         public static readonly SmtpResponse BadSequence = new SmtpResponse(SmtpReplyCode.BadSequence, "bad sequence of commands");
-        public static SmtpResponse AuthenticationRequired = new SmtpResponse(SmtpReplyCode.AuthenticationRequired, "authentication required");
+        public static readonly SmtpResponse UnsecuredChannel = new SmtpResponse(SmtpReplyCode.CommandNotImplemented, "command not implemented");
+        public static readonly SmtpResponse AuthenticationRequired = new SmtpResponse(SmtpReplyCode.AuthenticationRequired, "authentication required");
+        public static readonly SmtpResponse SslUpgradeFailed = new SmtpResponse(SmtpReplyCode.ClientNotPermitted, "protocols not supported");
+        public static readonly SmtpResponse AuthenticationError = new SmtpResponse(SmtpReplyCode.ClientNotPermitted, "4.7.0 temporary authentication failure");
+        public static readonly SmtpResponse TemporaryRejection = new SmtpResponse(SmtpReplyCode.TemporaryReject, "relay unavailable. Try again later");
+        public static readonly SmtpResponse SystemError = new SmtpResponse(SmtpReplyCode.TemporarySystemError, "error processing request. Try again later");
+        public static readonly SmtpResponse StartMailInput = new SmtpResponse(SmtpReplyCode.StartMailInput, "start mail input, end with <CRLF>.<CRLF>");
 
         /// <summary>
         /// Constructor.
@@ -36,5 +42,10 @@
         /// Gets the repsonse message.
         /// </summary>
         public string Message { get; }
+
+        public string ResponseToString()
+        {
+            return $"{(int)ReplyCode} {Message}";
+        }
     }
 }

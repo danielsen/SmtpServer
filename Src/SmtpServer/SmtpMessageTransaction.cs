@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SmtpServer.Mail;
 
 namespace SmtpServer
 {
-    internal sealed class SmtpMessageTransaction : IMessageTransaction
+    public class SmtpMessageTransaction : IMessageTransaction
     {
         /// <summary>
         /// Constructor.
@@ -19,10 +20,16 @@ namespace SmtpServer
         /// </summary>
         public void Reset()
         {
+            Id = Guid.NewGuid();
             From = null;
             To = new Collection<IMailbox>();
             Parameters = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
         }
+
+        /// <summary>
+        /// Gets or sets the id for this transaction
+        /// </summary>
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the mailbox that is sending the message.

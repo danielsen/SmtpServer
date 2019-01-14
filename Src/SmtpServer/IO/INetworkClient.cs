@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SmtpServer.Extensions;
 using SmtpServer.Protocol;
 
 namespace SmtpServer.IO
@@ -19,7 +20,7 @@ namespace SmtpServer.IO
         /// <param name="count">The number of bytes to consume.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The list of buffers that contain the bytes matching while the predicate was true.</returns>
-        Task<IReadOnlyList<ArraySegment<byte>>> ReadAsync(Func<byte, bool> @continue, long count = Int64.MaxValue, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<ArraySegment<byte>>> ReadAsync(Func<byte, bool> @continue, long count = Int64.MaxValue, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Write a list of byte array segments.
@@ -27,14 +28,14 @@ namespace SmtpServer.IO
         /// <param name="buffers">The list of array segment buffers to write.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that asynchronously performs the operation.</returns>
-        Task WriteAsync(IReadOnlyList<ArraySegment<byte>> buffers, CancellationToken cancellationToken = default);
+        Task WriteAsync(IReadOnlyList<ArraySegment<byte>> buffers, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Flush the write buffers to the stream.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that represents the asynchronous flush operation.</returns>
-        Task FlushAsync(CancellationToken cancellationToken = default);
+        Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Upgrade to a secure stream.
@@ -43,12 +44,24 @@ namespace SmtpServer.IO
         /// <param name="protocols">The value that represents the protocol used for authentication.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that asynchronously performs the operation.</returns>
-        Task UpgradeAsync(X509Certificate certificate, SslProtocols protocols, CancellationToken cancellationToken = default);
+        Task UpgradeAsync(X509Certificate certificate, SslProtocols protocols, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns a value indicating whether or not the current client is secure.
         /// </summary>
         bool IsSecure { get; }
+
+        /// <summary>
+        /// Returns the total count of bytes read on this network client.
+        /// </summary>
+        /// <returns>Total count of bytes read.</returns>
+        int BytesRead();
+
+        /// <summary>
+        /// Returns the total count of bytes sent on this network client.
+        /// </summary>
+        /// <returns>Total count of bytes sent.</returns>
+        int BytesSent();
     }
 
     public static class NetworkClientExtensions
@@ -85,7 +98,7 @@ namespace SmtpServer.IO
         /// <param name="client">The stream to read a line from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The string that was read from the stream.</returns>
-        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadLineAsync(this INetworkClient client, CancellationToken cancellationToken = default)
+        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadLineAsync(this INetworkClient client, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -102,7 +115,7 @@ namespace SmtpServer.IO
         /// <param name="encoding">The encoding to use when converting to a string representation.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The string that was read from the stream.</returns>
-        public static async Task<string> ReadLineAsync(this INetworkClient client, Encoding encoding, CancellationToken cancellationToken = default)
+        public static async Task<string> ReadLineAsync(this INetworkClient client, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -123,7 +136,7 @@ namespace SmtpServer.IO
         /// <param name="buffer">The byte array buffer to write to the client stream.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task WriteAsync(this INetworkClient client, byte[] buffer, CancellationToken cancellationToken = default)
+        public static Task WriteAsync(this INetworkClient client, byte[] buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -140,7 +153,7 @@ namespace SmtpServer.IO
         /// <param name="text">The text to write to the client stream.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task WriteLineAsync(this INetworkClient client, string text, CancellationToken cancellationToken = default)
+        public static Task WriteLineAsync(this INetworkClient client, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -158,7 +171,7 @@ namespace SmtpServer.IO
         /// <param name="encoding">The encoding to use when converting the bytes to a text representation.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task WriteLineAsync(this INetworkClient client, string text, Encoding encoding, CancellationToken cancellationToken = default)
+        public static Task WriteLineAsync(this INetworkClient client, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -175,7 +188,7 @@ namespace SmtpServer.IO
         /// <param name="client">The stream to read a line from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The buffers that were read until the block was terminated.</returns>
-        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadBlockAsync(this INetworkClient client, CancellationToken cancellationToken = default)
+        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadBlockAsync(this INetworkClient client, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {
@@ -193,7 +206,7 @@ namespace SmtpServer.IO
         /// <param name="client">The stream to read a line from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The buffers that were read until the block was terminated.</returns>
-        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadDotBlockAsync(this INetworkClient client, CancellationToken cancellationToken = default)
+        public static async Task<IReadOnlyList<ArraySegment<byte>>> ReadDotBlockAsync(this INetworkClient client, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (client == null)
             {

@@ -70,7 +70,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeEnd() == false)
             {
-                _options.Logger.LogVerbose("QUIT command can not have parameters.");
+                _options.Logger.WriteTrace("QUIT command can not have parameters.");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -95,7 +95,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeEnd() == false)
             {
-                _options.Logger.LogVerbose("NOOP command can not have parameters.");
+                _options.Logger.WriteTrace("NOOP command can not have parameters.");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -120,7 +120,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeEnd() == false)
             {
-                _options.Logger.LogVerbose("RSET command can not have parameters.");
+                _options.Logger.WriteTrace("RSET command can not have parameters.");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -218,7 +218,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeReversePath(out IMailbox mailbox) == false)
             {
-                _options.Logger.LogVerbose("Syntax Error (Text={0})", CompleteTokenizedText());
+                _options.Logger.WriteTrace("Syntax Error (Text={0})", CompleteTokenizedText());
 
                 errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError);
                 return false;
@@ -261,7 +261,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakePath(out IMailbox mailbox) == false)
             {
-                _options.Logger.LogVerbose("Syntax Error (Text={0})", CompleteTokenizedText());
+                _options.Logger.WriteTrace("Syntax Error (Text={0})", CompleteTokenizedText());
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -433,7 +433,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeEnd() == false)
             {
-                _options.Logger.LogVerbose("DATA command can not have parameters.");
+                _options.Logger.WriteTrace("DATA command can not have parameters.");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -459,7 +459,7 @@ namespace SmtpServer.Protocol
 
             if (TryMakeEnd() == false)
             {
-                _options.Logger.LogVerbose("STARTTLS command can not have parameters.");
+                _options.Logger.WriteTrace("STARTTLS command can not have parameters.");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -485,7 +485,7 @@ namespace SmtpServer.Protocol
 
             if (Enum.TryParse(Enumerator.Take().Text, true, out AuthenticationMethod method) == false)
             {
-                _options.Logger.LogVerbose("AUTH command requires a valid method (PLAIN or LOGIN)");
+                _options.Logger.WriteTrace("AUTH command requires a valid method (PLAIN or LOGIN)");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;
@@ -496,7 +496,7 @@ namespace SmtpServer.Protocol
             string parameter = null;
             if (TryMake(TryMakeEnd) == false && TryMakeBase64(out parameter) == false)
             {
-                _options.Logger.LogVerbose("AUTH parameter must be a Base64 encoded string");
+                _options.Logger.WriteTrace("AUTH parameter must be a Base64 encoded string");
 
                 errorResponse = SmtpResponse.SyntaxError;
                 return false;

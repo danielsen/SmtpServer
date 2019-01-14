@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using SmtpServer.IO;
 using System.Net;
+using SmtpServer.IO;
 using SmtpServer.Protocol;
 
 namespace SmtpServer
@@ -17,6 +17,11 @@ namespace SmtpServer
         /// Fired when the session has been authenticated.
         /// </summary>
         public event EventHandler<EventArgs> SessionAuthenticated;
+
+        /// <summary>
+        /// Fired when the session delivers a response.
+        /// </summary>
+        public event EventHandler<SmtpResponseEventArgs> ResponseDelivered;
 
         /// <summary>
         /// Constructor.
@@ -92,5 +97,15 @@ namespace SmtpServer
         /// The destination endpoint on the proxy as reported by proxy-protocol.
         /// </summary>
         public IPEndPoint ProxyDestinationEndpoint { get; internal set; }
+
+        /// <summary>
+        /// Returns the number of transactions in the session.
+        /// </summary>
+        public int TransactionCount { get; internal set; }
+
+        /// <summary>
+        /// Number of recipients independent of transactions.
+        /// </summary>
+        public int RecipientCount { get; internal set; }
     }
 }
