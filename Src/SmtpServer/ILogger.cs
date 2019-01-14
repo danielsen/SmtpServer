@@ -1,12 +1,17 @@
-﻿namespace SmtpServer
+﻿using System;
+
+namespace SmtpServer
 {
     public interface ILogger
     {
-        /// <summary>
-        /// Log a verbose message.
-        /// </summary>
-        /// <param name="format">The message format.</param>
-        /// <param name="args">The message arguments.</param>
-        void LogVerbose(string format, params object[] args);
+        void WriteTrace(string message, params object[] args);
+        void WriteDebug(string message, params object[] args);
+        void WriteInfo(string message, params object[] args);
+        void WriteWarning(string message, params object[] args);
+        void WriteError(string message, params object[] args);
+
+        string WriteException(Exception exception);
+        string WriteException(Exception exception, string message, params object[] args);
+        string WriteExceptionWarning(Exception exception);
     }
 }
